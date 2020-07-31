@@ -11,6 +11,11 @@ inputs:
   restore-keys:
     description: 'An ordered list of keys to use for restoring the cache if no cache hit occurred for key'
     required: false
+  force-update:
+    description: 'Update cache contents even if exact cache match was hit'
+    default: false
+    required: true
+
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
