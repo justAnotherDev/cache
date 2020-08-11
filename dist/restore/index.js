@@ -37463,7 +37463,7 @@ function checkKey(key) {
  * @param downloadOptions cache download options
  * @returns string returns the key for the cache hit, otherwise returns undefined
  */
-function restoreCache(paths, primaryKey, restoreKeys, options) {
+function restoreCache(paths, primaryKey, restoreKeys, skipDownload, options) {
     return __awaiter(this, void 0, void 0, function* () {
         checkPaths(paths);
         restoreKeys = restoreKeys || [];
@@ -37484,6 +37484,10 @@ function restoreCache(paths, primaryKey, restoreKeys, options) {
         if (!(cacheEntry === null || cacheEntry === void 0 ? void 0 : cacheEntry.archiveLocation)) {
             // Cache not found
             return undefined;
+        }
+        if (skipDownload) {
+            core.info(`Skipping cache download`);
+            return cacheEntry.cacheKey;
         }
         const archivePath = path.join(yield utils.createTempDirectory(), utils.getCacheFileName(compressionMethod));
         core.debug(`Archive Path: ${archivePath}`);
@@ -37563,6 +37567,7 @@ var Inputs;
     Inputs["Key"] = "key";
     Inputs["Path"] = "path";
     Inputs["RestoreKeys"] = "restore-keys";
+    Inputs["SkipDownload"] = "skip-download";
 })(Inputs = exports.Inputs || (exports.Inputs = {}));
 var Outputs;
 (function (Outputs) {
@@ -39084,7 +39089,8 @@ function run() {
                 required: true
             });
             try {
-                const cacheKey = yield cache.restoreCache(cachePaths, primaryKey, restoreKeys);
+                const skipDownload = core.getInput(constants_1.Inputs.SkipDownload, { required: true }) == 'true';
+                const cacheKey = yield cache.restoreCache(cachePaths, primaryKey, restoreKeys, skipDownload);
                 if (!cacheKey) {
                     core.info(`Cache not found for input keys: ${[
                         primaryKey,
