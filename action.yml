@@ -11,6 +11,10 @@ inputs:
   restore-keys:
     description: 'An ordered list of keys to use for restoring the cache if no cache hit occurred for key'
     required: false
+  skip-download:
+    description: 'Skip downloading the cached files if there is an exact cache hit'
+    default: false
+    required: true
 outputs:
   cache-hit:
     description: 'A boolean value to indicate an exact match was found for the primary key'
