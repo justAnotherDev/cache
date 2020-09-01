@@ -1,25 +1,14 @@
 name: Tests
 
 on:
-  pull_request:
-    branches:
-      - main
-      - releases/**
-    paths-ignore:
-      - '**.md'
   push:
-    branches:
-      - main
-      - releases/**
-    paths-ignore:
-      - '**.md'
 
 jobs:
   # Build and unit test
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-16.04, windows-latest, macOS-latest]
+        os: [ubuntu-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -63,7 +52,7 @@ jobs:
   test-save:
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-16.04, windows-latest, macOS-latest]
+          os: [ubuntu-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -86,7 +75,7 @@ jobs:
     needs: test-save
     strategy:
       matrix:
-        os: [ubuntu-latest, ubuntu-16.04, windows-latest, macOS-latest]
+          os: [ubuntu-latest]
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
@@ -105,6 +94,61 @@ jobs:
     - name: Verify cache files outside working directory
       shell: bash
       run: __tests__/verify-cache-files.sh ${{ runner.os }} ~/test-cache
+
+
+  test-overwrite:
+    needs: test-restore
+    strategy:
+      matrix:
+          os: [ubuntu-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Restore cache
+      uses: ./
+      with:
+        key: test-${{ runner.os }}-${{ github.run_id }}
+        path: |
+          test-cache
+          ~/test-cache
+        force-update: true
+    - name: Verify cache files in working directory
+      shell: bash
+      run: __tests__/verify-cache-files.sh ${{ runner.os }} test-cache
+    - name: Verify cache files outside working directory
+      shell: bash
+      run: __tests__/verify-cache-files.sh ${{ runner.os }} ~/test-cache
+    - name: Remove cache files in working directory
+      shell: bash
+      run: |
+        rm -rf test-cache 
+
+  test-confirm-overwrite:
+    needs: test-overwrite
+    strategy:
+      matrix:
+          os: [ubuntu-latest]
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Restore cache
+      uses: ./
+      with:
+        key: test-${{ runner.os }}-${{ github.run_id }}
+        path: |
+          test-cache
+          ~/test-cache
+    - name: Verify cache files don't exist in working directory
+      shell: bash
+      run: |
+        [[ ! -d test-cache ]] || echo "Failure: test-cache shouldn't exist." && exit 1
+    - name: Verify cache files outside working directory
+      shell: bash
+      run: __tests__/verify-cache-files.sh ${{ runner.os }} ~/test-cach
 
   # End to end with proxy
   test-proxy-save:
@@ -152,3 +196,4 @@ jobs:
         path: test-cache
     - name: Verify cache
       run: __tests__/verify-cache-files.sh proxy test-cache
+

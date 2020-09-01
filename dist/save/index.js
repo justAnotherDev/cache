@@ -37419,7 +37419,10 @@ function run() {
                 utils.logWarning(`Error retrieving key from state.`);
                 return;
             }
-            if (utils.isExactKeyMatch(primaryKey, state)) {
+            const forceUpdate = core.getInput(constants_1.Inputs.ForceUpdate, {
+                required: false
+            }) == "true";
+            if (!forceUpdate && utils.isExactKeyMatch(primaryKey, state)) {
                 core.info(`Cache hit occurred on the primary key ${primaryKey}, not saving cache.`);
                 return;
             }
@@ -37648,6 +37651,7 @@ var Inputs;
     Inputs["Key"] = "key";
     Inputs["Path"] = "path";
     Inputs["RestoreKeys"] = "restore-keys";
+    Inputs["ForceUpdate"] = "force-update";
 })(Inputs = exports.Inputs || (exports.Inputs = {}));
 var Outputs;
 (function (Outputs) {

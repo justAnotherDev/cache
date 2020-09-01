@@ -37563,6 +37563,7 @@ var Inputs;
     Inputs["Key"] = "key";
     Inputs["Path"] = "path";
     Inputs["RestoreKeys"] = "restore-keys";
+    Inputs["ForceUpdate"] = "force-update";
 })(Inputs = exports.Inputs || (exports.Inputs = {}));
 var Outputs;
 (function (Outputs) {

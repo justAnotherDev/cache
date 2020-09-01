@@ -299,3 +299,38 @@ test("save with valid inputs uploads a cache", async () => {
 
     expect(failedMock).toHaveBeenCalledTimes(0);
 });
+
+test("save with matching primary key uploads content when force update is true", async () => {
+    const failedMock = jest.spyOn(core, "setFailed");
+
+    const primaryKey = "Linux-node-bb828da54c148048dd17899ba9fda624811cfb43";
+    const savedCacheKey = "Linux-node-bb828da54c148048dd17899ba9fda624811cfb43";
+
+    jest.spyOn(core, "getState")
+        // Cache Entry State
+        .mockImplementationOnce(() => {
+            return savedCacheKey;
+        })
+        // Cache Key State
+        .mockImplementationOnce(() => {
+            return primaryKey;
+        });
+
+    const inputPath = "node_modules";
+    testUtils.setInput(Inputs.Path, inputPath);
+    testUtils.setInput(Inputs.ForceUpdate, "true");
+
+    const cacheId = 4;
+    const saveCacheMock = jest
+        .spyOn(cache, "saveCache")
+        .mockImplementationOnce(() => {
+            return Promise.resolve(cacheId);
+        });
+
+    await run();
+
+    expect(saveCacheMock).toHaveBeenCalledTimes(1);
+    expect(saveCacheMock).toHaveBeenCalledWith([inputPath], primaryKey);
+
+    expect(failedMock).toHaveBeenCalledTimes(0);
+});
